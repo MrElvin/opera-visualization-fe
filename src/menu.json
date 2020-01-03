@@ -1,0 +1,26 @@
+[
+  {
+    "key": "LIST",
+    "name": "京剧剧本列表",
+    "iconType": "unordered-list",
+    "routeName": "/list"
+  },
+  {
+    "key": "OVERVIEW",
+    "name": "京剧剧本概览图",
+    "iconType": "global",
+    "routeName": "/overview"
+  },
+  {
+    "key": "FINGER",
+    "name": "京剧剧本指纹图",
+    "iconType": "paper-clip",
+    "routeName": "/finger"
+  },
+  {
+    "key": "FLOW",
+    "name": "京剧剧本情节图",
+    "iconType": "rise",
+    "routeName": "/flow"
+  }
+]

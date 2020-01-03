@@ -1,0 +1,53 @@
+.page-finger-container
+  padding 12px
+  height 100vh
+
+.page-finger-top-content
+  display flex
+  .page-finger-search
+    width 40%
+  .page-finger-select-container
+    display flex
+    justify-content flex-end
+    padding-right 12px
+    width 60%
+  .page-finger-select-span, .page-finger-radio-span
+    display inline-block
+    margin-left 24px
+    line-height 30px
+    cursor default
+  .page-finger-radio-span
+    margin-right 8px
+  .page-finger-radio
+    line-height 30px
+  .page-finger-select
+    margin-left 8px
+    width 160px
+
+.page-finger-gradient-container
+  display flex
+  flex-direction row
+  justify-content space-between
+  margin-top 12px
+  span
+    display inline-block
+    flex 0 0 auto
+  .page-finger-gradient
+    flex 1 1 auto
+    margin-right 12px
+    margin-left 12px
+    height 20px
+    background linear-gradient(to right, #3f51b1 0%, #efefef 50%, #f18271 100%)
+    // background-image linear-gradient(to right, #3f51b1 0%, #5a55ae 13%, #7b5fac 25%, #8f6aae 38%, #a86aa4 50%, #cc6b8e 62%, #f18271 75%, #f3a469 87%, #f7c978 100%)
+
+.page-finger-list
+  display flex
+  flex-wrap wrap
+  justify-content space-between
+  align-items flex-start
+  align-content flex-start
+  overflow auto
+  width 100%
+  height calc(100% - 126px)
+  &::-webkit-scrollbar
+    display none
