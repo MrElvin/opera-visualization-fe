@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { withRouter } from 'react-router-dom'
 import { Input, Select, Divider, Spin, Radio } from 'antd'
 import axios from 'axios'
 import FingerGraph from './fingerGraph'
@@ -21,7 +22,7 @@ class FingerPrintPage extends Component {
       filterPeriod: '',
       filterTopic: '',
       loading: true,
-      squareAmount: 250
+      squareAmount: 400
     }
     this.calculatePaddingGraph = this.calculatePaddingGraph.bind(this)
     this.handlePeriodChange = this.handlePeriodChange.bind(this)
@@ -32,6 +33,10 @@ class FingerPrintPage extends Component {
     const that = this
     window.addEventListener('resize', that.calculatePaddingGraph)
     this.search(this.state.searchValue)
+  }
+  componentWillUnmount () {
+    const that = this
+    window.removeEventListener('resize', that.calculatePaddingGraph)
   }
   calculatePaddingGraph () {
     const clientWidth = document.body.clientWidth
@@ -47,9 +52,19 @@ class FingerPrintPage extends Component {
   }
   async search (value) {
     this.setState({ loading: true })
-    const searchResult = (await axios.get(
-      `/api/finger?searchValue=${value}&squareAmount=${this.state.squareAmount}`
-    )).data.data
+    let searchResult = null
+    if (!value) {
+      searchResult = (await axios.get(
+        `/allFingerData${this.state.squareAmount}.json`
+      )).data.data
+    } else {
+      searchResult = (await axios.get(
+        `/api/finger?searchValue=${value}&squareAmount=${
+          this.state.squareAmount
+        }`
+      )).data.data
+    }
+    console.log(searchResult)
     this.setState(
       {
         fingerDataRaw: searchResult,
@@ -126,8 +141,8 @@ class FingerPrintPage extends Component {
                 className='page-finger-radio'
               >
                 <Radio value={100}>100</Radio>
-                <Radio value={250}>250</Radio>
-                <Radio value={500}>500</Radio>
+                <Radio value={400}>400</Radio>
+                <Radio value={800}>800</Radio>
               </Radio.Group>
               {topics.length > 1 || periods.length > 1 ? (
                 <>
@@ -182,4 +197,4 @@ class FingerPrintPage extends Component {
   }
 }
 
-export default FingerPrintPage
+export default withRouter(FingerPrintPage)

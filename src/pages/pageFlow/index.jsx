@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
+import { withRouter } from 'react-router-dom'
 import { Input, Select, Divider, Spin } from 'antd'
+import axios from 'axios'
+import FlowGraph from './flowGraph'
 
 import './index.styl'
 
@@ -24,18 +27,117 @@ class FlowPage extends Component {
       filterPeriod: '',
       filterTopic: '',
       filterTrade: '',
+      searchValue: '',
       topics: ['全部'],
       periods: ['全部'],
-      trades: ['全部']
+      trades: ['全部'],
+      flowDataRaw: [],
+      flowDataFiltered: []
     }
+    this.handlePeriodChange = this.handlePeriodChange.bind(this)
+    this.handleTopicChange = this.handleTopicChange.bind(this)
+    this.handleTradeChange = this.handleTradeChange.bind(this)
   }
-  componentDidMount () {
+  async componentDidMount () {
     this.setState({ loading: false })
+    // const that = this
+    // window.addEventListener('resize', that.calculatePaddingGraph)
+    await this.search(this.state.searchValue)
   }
-  handlePeriodChange () {}
-  handleTopicChange () {}
+  async search (value) {
+    this.setState({ loading: true })
+    let searchResult = null
+    if (!value) {
+      searchResult = (await axios.get(`/allFlowData.json`)).data.data
+    } else {
+      searchResult = (await axios.get(`/api/flow?searchValue=${value}`)).data
+        .data
+    }
+    const trades = [
+      ...new Set(
+        searchResult
+          .map(v => v.roleNameIncluded)
+          .reduce((prev, curr) => {
+            prev = [...prev, ...curr]
+            return prev
+          }, [])
+      )
+    ]
+    this.setState({
+      loading: false,
+      flowDataRaw: searchResult,
+      flowDataFiltered: searchResult,
+      topics: ['全部', ...new Set(searchResult.map(v => v.operaTopic))],
+      periods: ['全部', ...new Set(searchResult.map(v => v.operaPeriod))],
+      trades: ['全部', ...trades]
+    })
+    console.log(searchResult)
+  }
+  handlePeriodChange (period) {
+    let flowDataFiltered = null
+    if (period === '全部') {
+      flowDataFiltered = this.state.flowDataRaw.slice()
+    } else {
+      flowDataFiltered = this.state.flowDataRaw.filter(
+        v => v.operaPeriod === period
+      )
+    }
+    if (this.state.filterTopic && this.state.filterTopic !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(
+        v => v.operaTopic === this.state.filterTopic
+      )
+    }
+    if (this.state.filterTrade && this.state.filterTrade !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(v =>
+        v.roleNameIncluded.includes(this.state.filterTrade)
+      )
+    }
+    this.setState({ filterPeriod: period, flowDataFiltered })
+  }
+  handleTopicChange (topic) {
+    let flowDataFiltered = null
+    if (topic === '全部') {
+      flowDataFiltered = this.state.flowDataRaw.slice()
+    } else {
+      flowDataFiltered = this.state.flowDataRaw.filter(
+        v => v.operaTopic === topic
+      )
+    }
+    if (this.state.filterPeriod && this.state.filterPeriod !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(
+        v => v.operaPeriod === this.state.filterPeriod
+      )
+    }
+    if (this.state.filterTrade && this.state.filterTrade !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(v =>
+        v.roleNameIncluded.includes(this.state.filterTrade)
+      )
+    }
+    this.setState({ filterTopic: topic, flowDataFiltered })
+  }
+  handleTradeChange (trade) {
+    let flowDataFiltered = null
+    if (trade === '全部') {
+      flowDataFiltered = this.state.flowDataRaw.slice()
+    } else {
+      flowDataFiltered = this.state.flowDataRaw.filter(v =>
+        v.roleNameIncluded.includes(trade)
+      )
+    }
+    if (this.state.filterTopic && this.state.filterTopic !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(
+        v => v.operaTopic === this.state.filterTopic
+      )
+    }
+    if (this.state.filterPeriod && this.state.filterPeriod !== '全部') {
+      flowDataFiltered = flowDataFiltered.filter(
+        v => v.operaPeriod === this.state.filterPeriod
+      )
+    }
+    this.setState({ filterTrade: trade, flowDataFiltered })
+  }
   render () {
-    const { periods, topics, trades } = this.state
+    const { periods, topics, trades, flowDataFiltered } = this.state
     return (
       <Spin spinning={this.state.loading} tip='Loading...' size='large'>
         <div className='page-flow-container'>
@@ -91,36 +193,34 @@ class FlowPage extends Component {
             </div>
           </div>
           <div className='page-flow-trades-tips-container'>
-            {TRADES_TIPS.map((trade, index) => (
-              <div key={index} className='page-flow-trades-tip'>
-                <div
-                  className='page-flow-trade-tip-box'
-                  style={{ backgroundColor: `${trade[1]}` }}
-                />
-                <span className='page-flow-trade-tip-text'>{trade[0]}</span>
-              </div>
-            ))}
+            <div className='page-flow-trades-tips-wrap'>
+              {TRADES_TIPS.map((trade, index) => (
+                <div key={index} className='page-flow-trades-tip'>
+                  <div
+                    className='page-flow-trade-tip-box'
+                    style={{ backgroundColor: `${trade[1]}` }}
+                  />
+                  <span className='page-flow-trade-tip-text'>{trade[0]}</span>
+                </div>
+              ))}
+            </div>
+            <div className='list-count'>
+              共 {this.state.flowDataFiltered.length} 条
+            </div>
           </div>
           <Divider className='page-flow-divider' />
           <div className='page-flow-list'>
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
-            <div className='test' />
+            {flowDataFiltered.map((data, index) => (
+              <FlowGraph
+                flowData={data.flowData}
+                key={data.operaId}
+                operaId={data.operaId}
+                operaName={data.operaName}
+                readWords={data.readWords}
+                singWords={data.singWords}
+                index={index + 1}
+              />
+            ))}
           </div>
         </div>
       </Spin>
@@ -128,4 +228,4 @@ class FlowPage extends Component {
   }
 }
 
-export default FlowPage
+export default withRouter(FlowPage)

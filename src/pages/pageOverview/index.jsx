@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { Spin } from 'antd'
+import { withRouter } from 'react-router-dom'
+import { Spin, Drawer } from 'antd'
 import * as d3 from 'd3'
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey'
 import G2 from '@antv/g2'
@@ -70,18 +71,26 @@ class OverviewPage extends Component {
       isSankeyAreaHalf: false,
       sankeyName: '',
       sankeyValue: 0,
-      loading: true
+      loading: true,
+      visible: false,
+      placement: 'bottom',
+      drawerTitle: '',
+      drawContent: []
     }
     this.relationChart = null
     this.containerRef = React.createRef()
     this.sankeyRef = React.createRef()
     this.wordCloudRef = React.createRef()
     this.relationRef = React.createRef()
+    this.titleClickHandler = this.titleClickHandler.bind(this)
   }
   async componentDidMount () {
     const { clientWidth, clientHeight } = this.sankeyRef.current
     await this.drawSankeyDiagram(clientWidth, clientHeight)
     this.setState({ loading: false })
+    // this.showDrawer({
+    //   roleName: 'cc'
+    // })
   }
   async getSankeyData () {
     let result = null
@@ -451,13 +460,65 @@ class OverviewPage extends Component {
     }
     if (!this.relationChart) {
       this.relationChart = echarts.init(this.relationRef.current)
+      const that = this
+      this.relationChart.on('click', function (e) {
+        // 点击叶子的时候弹出列表
+        if (!e.data.children) {
+          that.showDrawer(e.data)
+        }
+      })
     }
     this.relationChart.setOption(option)
   }
+  showDrawer = async data => {
+    const operaIds = data.operaId
+    // const operaIds =
+    // '01007014,02001046,02001050,03027001,03051001,03051002,03051003,03051004,03051005,03051006,03051007,03051008'
+    const result = (await axios.get('/api/drawer?operaId=' + operaIds)).data
+      .data
+    console.log('result: ', result)
+    this.setState({
+      visible: true,
+      drawerTitle: `包含角色 “${data.roleName}” 的剧本`,
+      drawContent: result
+    })
+  }
+  onClose = () => {
+    this.setState({ visible: false })
+  }
+  titleClickHandler (data) {
+    console.log('title', data)
+    this.props.history.push(`/opera/${data.id}`)
+  }
   render () {
+    const titleClickHandler = this.titleClickHandler
     return (
       <Spin spinning={this.state.loading} tip='Loading...' size='large'>
         <div id='page-overview-container' ref={this.containerRef}>
+          <Drawer
+            title={this.state.drawerTitle}
+            placement={this.state.placement}
+            closable={false}
+            onClose={this.onClose}
+            visible={this.state.visible}
+            bodyStyle={{ padding: '8px 24px' }}
+          >
+            {this.state.drawContent.length ? (
+              <div className='draw-list'>
+                {this.state.drawContent.map((item, index) => (
+                  <div
+                    key={index}
+                    className='draw-item'
+                    onClick={e => titleClickHandler(item, e)}
+                  >
+                    <p className='draw-name'>{item.name}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              '无'
+            )}
+          </Drawer>
           <div
             id='sankey-container'
             ref={this.sankeyRef}
@@ -481,4 +542,4 @@ class OverviewPage extends Component {
   }
 }
 
-export default OverviewPage
+export default withRouter(OverviewPage)

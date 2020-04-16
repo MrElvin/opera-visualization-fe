@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
+import { withRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import * as d3 from 'd3'
-import { Tooltip, Popover } from 'antd'
+import { Tooltip, Popover, Icon } from 'antd'
 
 import './fingerGraph.styl'
 
@@ -16,6 +17,7 @@ class FingerGraph extends Component {
       popoverContent: []
     }
     this.fingerRef = React.createRef()
+    this.titleClickHandler = this.titleClickHandler.bind(this)
   }
   componentDidMount () {
     this.drawFingerGraph()
@@ -128,7 +130,7 @@ class FingerGraph extends Component {
         .attr('d', d => line(d))
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 1.2)
-        .attr('fill-opacity', 0)
+        .attr('fill', 'none')
       // 绘制圆点
       svg
         .append('g')
@@ -144,14 +146,25 @@ class FingerGraph extends Component {
         .attr('fill-opacity', 1)
     }
   }
+  titleClickHandler () {
+    this.props.history.push(`/opera/${this.state.fingerData.operaId}`)
+  }
   render () {
     const data = this.state.fingerData
     const popover = this.state.popoverContent
+    const titleClickHandler = this.titleClickHandler
     return (
       <div className='finger-graph-container'>
-        <Tooltip title={data.operaName}>
-          <div className='finger-graph-name'>{data.operaName}</div>
-        </Tooltip>
+        <div className='finger-graph-top-container'>
+          {data.isSingOpera.result ? (
+            <Icon type='star' theme='twoTone' twoToneColor='#eb2f96' />
+          ) : null}
+          <Tooltip title={data.operaName}>
+            <div onClick={titleClickHandler} className='finger-graph-name'>
+              {data.operaName}
+            </div>
+          </Tooltip>
+        </div>
         <Popover
           placement='leftTop'
           content={
@@ -192,4 +205,5 @@ FingerGraph.propTypes = {
   fingerData: PropTypes.object
 }
 
-export default FingerGraph
+// export default FingerGraph
+export default withRouter(FingerGraph)
