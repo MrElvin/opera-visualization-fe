@@ -1,6 +1,12 @@
-# boone-react
+# 京剧剧本可视化前端
 
-A react workspace
+## 项目启动
+
+```bash
+npm start
+```
+
+## A react workspace
 
 - stylus
 - css modules
